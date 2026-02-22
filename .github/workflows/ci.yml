@@ -83,15 +83,15 @@ jobs:
 
     - name: Build Docker image
       run: |
-        docker build -t ${{ env.IMAGE_NAME }}:${{ github.sha }} .
-        docker tag ${{ env.IMAGE_NAME }}:${{ github.sha }} ${{ env.IMAGE_NAME }}:latest
+        docker build -t ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ github.sha }} .
+        docker tag ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ github.sha }} ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:latest
 
     - name: Run Trivy vulnerability scanner
       run: |
         docker run --rm -v /var/run/docker.sock:/var/run/docker.sock \
           -v $PWD:/output aquasec/trivy:latest image \
           --format sarif --output /output/trivy-results.sarif \
-          ${{ env.IMAGE_NAME }}:${{ github.sha }} || true
+          ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ github.sha }} || true
 
     - name: Ensure SARIF file exists
       run: |
@@ -118,8 +118,8 @@ jobs:
     - name: Push Docker image
       if: github.event_name != 'pull_request'
       run: |
-        docker push ${{ env.IMAGE_NAME }}:${{ github.sha }}
-        docker push ${{ env.IMAGE_NAME }}:latest
+        docker push ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ github.sha }}
+        docker push ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:latest
 
     - name: Generate SBOM
       if: github.event_name != 'pull_request'
@@ -127,7 +127,7 @@ jobs:
         docker run --rm -v /var/run/docker.sock:/var/run/docker.sock \
           -v $PWD:/output aquasec/trivy:latest image \
           --format spdx-json --output /output/sbom.spdx \
-          ${{ env.IMAGE_NAME }}:${{ github.sha }}
+          ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ github.sha }}
 
     - name: Upload SBOM artifact
       if: github.event_name != 'pull_request'
