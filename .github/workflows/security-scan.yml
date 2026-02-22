@@ -41,19 +41,22 @@ jobs:
         export JAVA_HOME=$JAVA_HOME
 
     - name: Snyk Dependency Scan
-      uses: snyk/actions/gradle@master
+      run: |
+        # Install Snyk CLI
+        npm install -g snyk
+        # Authenticate with Snyk
+        snyk auth $SNYK_TOKEN
+        # Run Snyk scan on Gradle project
+        snyk test --severity-threshold=medium
       env:
         SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
-      with:
-        args: --severity-threshold=medium
 
     - name: Snyk Code Analysis
-      uses: snyk/actions/gradle@master
+      run: |
+        # Run Snyk code analysis
+        snyk code test --severity-threshold=low
       env:
         SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
-      with:
-        command: code
-        args: --severity-threshold=low
 
     - name: Build Docker image for scanning
       run: docker build -t persons-finder:latest .
