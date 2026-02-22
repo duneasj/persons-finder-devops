@@ -2,7 +2,7 @@
 # Multi-stage build for Spring Boot Kotlin application
 # Stage 1: Build stage
 
-FROM openjdk:11-jdk-slim AS builder
+FROM eclipse-temurin:11-jdk-alpine AS builder
 
 WORKDIR /app
 
@@ -23,7 +23,7 @@ COPY src/ src/
 RUN ./gradlew build -x test
 
 # Stage 2: Runtime stage
-FROM openjdk:11-jre-slim
+FROM eclipse-temurin:11-jre-alpine
 
 # Create non-root user for security
 RUN addgroup -g 1000 -S appgroup && \
@@ -32,8 +32,8 @@ RUN addgroup -g 1000 -S appgroup && \
 # Set working directory
 WORKDIR /app
 
-# Change ownership to non-root user
-RUN chown -R appuser:appgroup /app
+# Copy the built JAR from builder stage
+COPY --from=builder /app/build/libs/*.jar app.jar
 
 # Switch to non-root user
 USER appuser
@@ -46,4 +46,4 @@ HEALTHCHECK --interval=30s --timeout=10s --start-period=60s --retries=3 \
     CMD wget --no-verbose --tries=1 --spider http://localhost:8080/actuator/health || exit 1
 
     # Run the application
-CMD ["java", "-jar", "build/libs/*.jar"]
+CMD ["java", "-jar", "app.jar"]
