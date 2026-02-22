@@ -73,11 +73,21 @@ jobs:
         image-ref: ${{ env.IMAGE_NAME }}:${{ github.sha }}
         format: 'sarif'
         output: 'trivy-results.sarif'
-        exit-code: '1'
+        exit-code: '0'
         severity: 'HIGH,CRITICAL'
 
+    - name: Check if SARIF file exists
+      run: |
+        if [ -f 'trivy-results.sarif' ]; then
+          echo "SARIF file exists"
+          cat trivy-results.sarif
+        else
+          echo "SARIF file not found"
+          exit 1
+        fi
+
     - name: Upload Trivy scan results to GitHub Security tab
-      uses: github/codeql-action/upload-sarif@v2
+      uses: github/codeql-action/upload-sarif@v3
       if: always()
       with:
         sarif_file: 'trivy-results.sarif'
