@@ -66,8 +66,8 @@ jobs:
       run: |
         # Install Snyk CLI
         npm install -g snyk
-        # Authenticate with Snyk
-        snyk auth $SNYK_TOKEN
+        # Set Snyk token directly (no browser auth needed)
+        export SNYK_TOKEN=${{ secrets.SNYK_TOKEN }}
         # Run Snyk scan on Gradle project
         snyk test --severity-threshold=high --fail-on-high
       env:
@@ -76,6 +76,7 @@ jobs:
     - name: Snyk Security Scan - Code
       run: |
         # Run Snyk code analysis
+        export SNYK_TOKEN=${{ secrets.SNYK_TOKEN }}
         snyk code test --severity-threshold=medium --fail-on-medium
       env:
         SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
