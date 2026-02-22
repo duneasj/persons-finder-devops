@@ -1,0 +1,14 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: persons-finder-service
+  labels:
+    app: persons-finder
+spec:
+  type: ClusterIP
+  ports:
+  - port: 80
+    targetPort: 8080
+    protocol: TCP
+  selector:
+    app: persons-finder
